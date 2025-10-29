@@ -28,4 +28,4 @@ aws ec2 create-route --route-table-id "preview-rtb-public-0"
 aws ec2 associate-route-table --route-table-id "preview-rtb-public-0" 
 --subnet-id "preview-subnet-public-0" 
 
-aws ec2 describe-route-tables  
+aws ec2 describe-route-tables  \
