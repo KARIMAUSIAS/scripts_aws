@@ -1,6 +1,6 @@
-aws ec2 create-vpc --cidr-block "192.168.0.0/24" \
---instance-tenancy "default" \
---tag-specifications '{"resourceType":"vpc","tags":[{"key":"Name","value":"vpckarim"}]}'
+aws ec2 create-vpc --cidr-block 192.168.0.0/24 \
+--tag-specifications 'ResourceType"=vpc,Tags=[{Key:Name,Value:MyVpc}]' \
+--query Vpc.VpcId --output text
 
 aws ec2 modify-vpc-attribute --vpc-id "preview-vpc-1234" \
 --enable-dns-hostnames '{"value":true}' 
