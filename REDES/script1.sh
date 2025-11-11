@@ -20,10 +20,36 @@ echo $SUB_ID
 
 aws ec2 modify-subnet-attribute --subnet-id $SUB_ID --map-public-ip-on-launch
 
+#creacion internet getway
+IGW_ID=$(aws ec2 create-internet-gateway \
+ --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=igw-karim}]' \
+ --query InternetGateway.InternetGatewayId --output text)
+
+#asociar internet getway a la vpc
+aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_ID
+
+#creacion de la tabla de enrutamiento
+TE_ID=$(aws ec2 create-route-table \
+    --vpc-id $VPC_ID \
+    --query RouteTable.RouteTableId \
+    --output text)
+
+#agregar la ruta para la salida a internet
+aws ec2 create-route \
+    --route-table-id $TE_ID \
+    --destination-cidr-block 0.0.0.0/0 \
+    --gateway-id $IGW_ID
+
+#asociar la tabla de enrutamiento a una subred
+aws ec2 associate-route-table \
+    --subnet-id $SUB_ID \
+    --route-table-id $TE_ID \
+    --query AssociationId \
+    --output text
 
 # Creación del grupo de seguridad
 SG_ID=$(aws ec2 create-security-group --group-name My-SG \
-    --description "Mi grupito de seguridad - 22P" \
+    --description "grupo seguridad puerto 22" \
     --vpc-id $VPC_ID \
     --output text)
 
@@ -62,10 +88,8 @@ EC2_ID=$(aws ec2 run-instances \
     --associate-public-ip-address \
     --count 1 \
     --key-name vockey \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Hector-Instance}]' \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ec2-karim}]' \
     --query Instances.InstanceId --output text)
-
-sleep 10m
 
 echo $EC2_ID
 
