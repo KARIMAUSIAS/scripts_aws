@@ -1,0 +1,133 @@
+{
+    "ReservationId": "r-0727eb39a01e7f335",
+    "OwnerId": "150107868788",
+    "Groups": [],
+    "Instances": [
+        {
+            "Architecture": "x86_64",
+            "BlockDeviceMappings": [],
+            "ClientToken": "20474702-b96c-443f-8428-fe2159b7e73f",
+            "EbsOptimized": false,
+            "EnaSupport": true,
+            "Hypervisor": "xen",
+            "NetworkInterfaces": [
+                {
+                    "Attachment": {
+                        "AttachTime": "2025-11-11T19:19:20+00:00",
+                        "AttachmentId": "eni-attach-047186bdbd3a4147e",
+                        "DeleteOnTermination": true,
+                        "DeviceIndex": 0,
+                        "Status": "attaching",
+                        "NetworkCardIndex": 0
+                    },
+                    "Description": "",
+                    "Groups": [
+                        {
+                            "GroupId": "sg-066b91848d8c86470",
+                            "GroupName": "My-SG"
+                        }
+                    ],
+                    "Ipv6Addresses": [],
+                    "MacAddress": "06:32:cb:d7:19:c1",
+                    "NetworkInterfaceId": "eni-019b8fa343147fab1",
+                    "OwnerId": "150107868788",
+                    "PrivateDnsName": "ip-192-168-0-9.ec2.internal",
+                    "PrivateIpAddress": "192.168.0.9",
+                    "PrivateIpAddresses": [
+                        {
+                            "Primary": true,
+                            "PrivateDnsName": "ip-192-168-0-9.ec2.internal",
+                            "PrivateIpAddress": "192.168.0.9"
+                        }
+                    ],
+                    "SourceDestCheck": true,
+                    "Status": "in-use",
+                    "SubnetId": "subnet-0775b74a2466b474f",
+                    "VpcId": "vpc-031ce5cb7c4095b00",
+                    "InterfaceType": "interface",
+                    "Operator": {
+                        "Managed": false
+                    }
+                }
+            ],
+            "RootDeviceName": "/dev/sda1",
+            "RootDeviceType": "ebs",
+            "SecurityGroups": [
+                {
+                    "GroupId": "sg-066b91848d8c86470",
+                    "GroupName": "My-SG"
+                }
+            ],
+            "SourceDestCheck": true,
+            "StateReason": {
+                "Code": "pending",
+                "Message": "pending"
+            },
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "ec2-karim"
+                }
+            ],
+            "VirtualizationType": "hvm",
+            "CpuOptions": {
+                "CoreCount": 1,
+                "ThreadsPerCore": 1
+            },
+            "CapacityReservationSpecification": {
+                "CapacityReservationPreference": "open"
+            },
+            "MetadataOptions": {
+                "State": "pending",
+                "HttpTokens": "required",
+                "HttpPutResponseHopLimit": 2,
+                "HttpEndpoint": "enabled",
+                "HttpProtocolIpv6": "disabled",
+                "InstanceMetadataTags": "disabled"
+            },
+            "EnclaveOptions": {
+                "Enabled": false
+            },
+            "BootMode": "uefi-preferred",
+            "PrivateDnsNameOptions": {
+                "HostnameType": "ip-name",
+                "EnableResourceNameDnsARecord": false,
+                "EnableResourceNameDnsAAAARecord": false
+            },
+            "MaintenanceOptions": {
+                "AutoRecovery": "default",
+                "RebootMigration": "default"
+            },
+            "CurrentInstanceBootMode": "legacy-bios",
+            "Operator": {
+                "Managed": false
+            },
+            "InstanceId": "i-0d04b53835df3b0f5",
+            "ImageId": "ami-0ecb62995f68bb549",
+            "State": {
+                "Code": 0,
+                "Name": "pending"
+            },
+            "PrivateDnsName": "ip-192-168-0-9.ec2.internal",
+            "PublicDnsName": "",
+            "StateTransitionReason": "",
+            "KeyName": "vockey",
+            "AmiLaunchIndex": 0,
+            "ProductCodes": [],
+            "InstanceType": "t2.micro",
+            "LaunchTime": "2025-11-11T19:19:20+00:00",
+            "Placement": {
+                "AvailabilityZoneId": "use1-az3",
+                "GroupName": "",
+                "Tenancy": "default",
+                "AvailabilityZone": "us-east-1e"
+            },
+            "Monitoring": {
+                "State": "disabled"
+            },
+            "SubnetId": "subnet-0775b74a2466b474f",
+            "VpcId": "vpc-031ce5cb7c4095b00",
+            "PrivateIpAddress": "192.168.0.9"
+        }
+    ]
+}

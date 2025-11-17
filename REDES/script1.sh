@@ -95,3 +95,7 @@ echo $EC2_ID
 
 # En caso de NO indicar el grupo de seguridad se haría de la siguiente manera:
 # aws ec2 modify-instance-attribute --instance-id $EC2_ID --groups $SG_ID
+
+#Para desasociar de una tabla de enrutamiento
+#AS_ID=$(aws ec2 describe-route-tables --filters Name=association.subnet-id,Values=$SUB_ID --query "RouteTables[0].Associations[?SubnetId!=null].RouteTableAssociationId" --output text)
+#aws ec2 disassociate-route-table --association-id $AS_ID
