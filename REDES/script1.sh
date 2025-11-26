@@ -1,5 +1,5 @@
 #creo la vpc y guardo el id
-VPC_ID=$(aws ec2 create-vpc --cidr-block 192.168.0.0/24 \
+VPC_ID=$(aws ec2 create-vpc --cidr-block 192.168.0.0/16 \
 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=VPC_KARIM}]' \
 --query Vpc.VpcId --output text)
 
@@ -10,42 +10,80 @@ aws ec2 modify-vpc-attribute \
     --vpc-id $VPC_ID \
     --enable-dns-hostnames "{\"Value\":true}"
 
-SUB_ID=$(aws ec2 create-subnet \
+SUB_PUB_ID=$(aws ec2 create-subnet \
     --vpc-id $VPC_ID \
-    --cidr-block 192.168.0.0/28 \
+    --cidr-block 192.168.12.0/24 \
     --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=subred1-karim}]' \
     --query Subnet.SubnetId --output text)
 
-echo $SUB_ID
+SUB_PRIV_ID=$(aws ec2 create-subnet \
+    --vpc-id $VPC_ID \
+    --cidr-block 192.168.138.0/24 \
+    --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=subred1-karim}]' \
+    --query Subnet.SubnetId --output text)
+echo $SUB_PUB_ID
+echo $SUB_PRIV_ID
 
-aws ec2 modify-subnet-attribute --subnet-id $SUB_ID --map-public-ip-on-launch
+#asociar privada a natgateway y crear tabla de enrutamiento nueva para la privada
 
-#creacion internet getway
-IGW_ID=$(aws ec2 create-internet-gateway \
+aws ec2 modify-subnet-attribute --subnet-id $SUB_PUB_ID --map-public-ip-on-launch
+
+#creacion internet gateway
+IGW_PUB_ID=$(aws ec2 create-internet-gateway \
  --tag-specifications 'ResourceType=internet-gateway,Tags=[{Key=Name,Value=igw-karim}]' \
  --query InternetGateway.InternetGatewayId --output text)
 
-#asociar internet getway a la vpc
-aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_ID
+#asociar internet gateway a la vpc
+aws ec2 attach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_PUB_ID
 
 #creacion de la tabla de enrutamiento
-TE_ID=$(aws ec2 create-route-table \
+TE_PUB_ID=$(aws ec2 create-route-table \
     --vpc-id $VPC_ID \
     --query RouteTable.RouteTableId \
     --output text)
 
+#creacion de la tabla de enrutamiento privada
+TE_PRIV_ID=$(aws ec2 create-route-table \
+    --vpc-id $VPC_ID \
+    --query RouteTable.RouteTableId \
+    --output text)
+
+aws ec2 associate-route-table \
+--subnet-id $SUB_PRIV_ID \
+--route-table-id $TE_PRIV_ID
+
 #agregar la ruta para la salida a internet
 aws ec2 create-route \
-    --route-table-id $TE_ID \
+    --route-table-id $TE_PUB_ID \
     --destination-cidr-block 0.0.0.0/0 \
-    --gateway-id $IGW_ID
+    --gateway-id $IGW_PUB_ID
 
 #asociar la tabla de enrutamiento a una subred
 aws ec2 associate-route-table \
-    --subnet-id $SUB_ID \
-    --route-table-id $TE_ID \
+    --subnet-id $SUB_PUB_ID \
+    --route-table-id $TE_PUB_ID \
     --query AssociationId \
     --output text
+
+#ip elastica para el nat gateway
+EIP_ALLOC_ID=$(aws ec2 allocate-address \
+--domain vpc \
+--query 'AllocationId' \
+--output text)
+
+#creacion del natgateway
+NAT_GW_ID=$(aws ec2 create-nat-gateway \
+--subnet-id $SUB_PUB_ID \
+--allocation-id $EIP_ALLOC_ID \
+--tag-specifications 'ResourceType=natgateway,Tags=[{Key=Name,Value=NAT-Publica}]' \
+--query 'NatGateway.NatGatewayId' \
+--output text)
+
+#CREAMOS LA RUTA EN LA TABLA DE RUTAS APUNTANDO HACIA LA NATGW
+aws ec2 create-route \
+--route-table-id $TE_PRIV_ID \
+--destination-cidr-block 0.0.0.0/0 \
+--nat-gateway-id $NAT_GW_ID
 
 # Creación del grupo de seguridad
 SG_ID=$(aws ec2 create-security-group --group-name My-SG \
@@ -80,7 +118,7 @@ echo $SG_ID
 ### Habilitar la asginación de IPv4 Pública en la subred
 aws ec2 modify-subnet-attribute --subnet-id $SUB_ID --map-public-ip-on-launch 
 
-EC2_ID=$(aws ec2 run-instances \
+EC2_PUB_ID=$(aws ec2 run-instances \
     --image-id ami-0ecb62995f68bb549 \
     --instance-type t3.micro \
     --subnet-id $SUB_ID \
@@ -88,11 +126,22 @@ EC2_ID=$(aws ec2 run-instances \
     --associate-public-ip-address \
     --count 1 \
     --key-name vockey \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ec2-karim}]' \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ec2-publica-karim}]' \
     --query Instances.InstanceId --output text)
 
-echo $EC2_ID
+EC2_PRIV_ID=$(aws ec2 run-instances \
+    --image-id ami-0ecb62995f68bb549 \
+    --instance-type t3.micro \
+    --subnet-id $SUB_PRIV_ID \
+    --security-group-ids $SG_ID \
+    --associate-public-ip-address \
+    --count 1 \
+    --key-name vockey \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=ec2-privada-karim}]' \
+    --query Instances.InstanceId --output text)
 
+echo $EC2_PUB_ID
+echo $EC2_PRIV_ID
 # En caso de NO indicar el grupo de seguridad se haría de la siguiente manera:
 # aws ec2 modify-instance-attribute --instance-id $EC2_ID --groups $SG_ID
 
