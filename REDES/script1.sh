@@ -235,23 +235,3 @@ echo "Instancia Pública: $EC2_PUB_ID"
 echo "Instancia Privada: $EC2_PRIV_ID"
 echo ""
 echo "Nota: Las instancias pueden tardar unos minutos en estar completamente disponibles."
-
-# ========================================
-# COMANDOS ÚTILES PARA LIMPIEZA (COMENTADOS)
-# ========================================
-# Para desasociar de una tabla de enrutamiento:
-# AS_ID=$(aws ec2 describe-route-tables --filters Name=association.subnet-id,Values=$SUB_PUB_ID --query "RouteTables[0].Associations[?SubnetId!=null].RouteTableAssociationId" --output text)
-# aws ec2 disassociate-route-table --association-id $AS_ID
-#
-# Para eliminar recursos (ejecutar en orden inverso):
-# aws ec2 terminate-instances --instance-ids $EC2_PUB_ID $EC2_PRIV_ID
-# aws ec2 delete-nat-gateway --nat-gateway-id $NAT_GW_ID
-# aws ec2 release-address --allocation-id $EIP_ALLOC_ID
-# aws ec2 delete-security-group --group-id $SG_ID
-# aws ec2 delete-route-table --route-table-id $TE_PUB_ID
-# aws ec2 delete-route-table --route-table-id $TE_PRIV_ID
-# aws ec2 detach-internet-gateway --vpc-id $VPC_ID --internet-gateway-id $IGW_PUB_ID
-# aws ec2 delete-internet-gateway --internet-gateway-id $IGW_PUB_ID
-# aws ec2 delete-subnet --subnet-id $SUB_PUB_ID
-# aws ec2 delete-subnet --subnet-id $SUB_PRIV_ID
-# aws ec2 delete-vpc --vpc-id $VPC_ID
