@@ -7,7 +7,7 @@ def crear_vpc():
     # Crear la VPC
     vpc = ec2.create_vpc(CidrBlock='172.16.0.0/16')
     vpc_id = vpc['Vpc']['VpcId']
-    print("VPC creada con ID: {vpc_id}")
+    print(f"VPC creada con ID: {vpc_id}")
 
     # Habilitar DNS support
     ec2.modify_vpc_attribute(
@@ -33,4 +33,4 @@ def crear_vpc():
 
 if __name__ == "__main__":
     vpc_id = crear_vpc()
-    print("Proceso completado. ID de la VPC: {vpc_id}")
+    print(f"Proceso completado. ID de la VPC: {vpc_id}")
