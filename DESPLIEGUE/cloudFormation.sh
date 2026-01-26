@@ -1,6 +1,8 @@
+# Para rds.yml
+
 aws cloudformation create-stack \
   --stack-name webapp-rds-stack \
-  --template-body file:///home/karrezmou/Escritorio/plantillas-yml/rds.yml \
+  --template-body file:///home/karrezmou/Escritorio/plantillas-yml/rdsoriginal.yml \
   --parameters \
     ParameterKey=AvailabilityZone,ParameterValue=us-east-1a \
     ParameterKey=EnvironmentType,ParameterValue=dev \
@@ -30,3 +32,16 @@ aws cloudformation update-stack \
 aws cloudformation delete-stack \
   --stack-name webapp-rds-stack 
 
+
+aws cloudformation create-stack \
+  --stack-name vpc-ec2-karim \
+  --template-body file:///home/karrezmou/Escritorio/plantillas-yml/aws4-02-1.yml \
+  --parameters \
+  ParameterKey=InstanceType,ParameterValue=t3.micro \
+  ParameterKey=CrearInstancia,ParameterValue=true
+
+aws cloudformation create-stack \
+  --stack-name vpc-multiregion-karim \
+  --template-body file:///home/karrezmou/Escritorio/plantillas-yml/aws4-02-2.yml \
+  --parameters \
+  ParameterKey=AttachIGW,ParameterValue=true
