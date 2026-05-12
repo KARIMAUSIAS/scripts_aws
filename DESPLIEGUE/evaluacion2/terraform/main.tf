@@ -1,53 +1,78 @@
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+
+  # backend "s3" {
+  #   bucket = "mi-terraform-state"
+  #   key    = "03_ejemplo/terraform.tfstate"
+  #   region = "eu-west-1"
+  # }
+}
+
 provider "aws" {
-    region = "us-east-1"
-}
+  region = var.aws_region
 
-resource "aws_vpc" "mi_vpc" {
-  cidr_block = "192.168.0.0/16"
-  tags = {
-    Name = "MiVPC"
+  default_tags {
+    tags = {
+      Project     = var.project_name
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
   }
 }
 
-# Crear una subred dentro de la VPC
-resource "aws_subnet" "mi_subnet" {
-  vpc_id            = aws_vpc.mi_vpc.id
-  cidr_block        = "192.168.1.0/24"
-  availability_zone = "us-east-1a"
-  tags = {
-    Name = "MiSubnet"
-  }
+# ============================================================
+#  MÓDULO VPC - Se crea primero (EC2 depende de sus outputs)
+# ============================================================
+
+module "vpc" {
+  source = "./modulos/vpc"
+
+  environment        = var.environment
+  project_name       = var.project_name
+  vpc_cidr           = var.vpc_cidr
+  public_subnets     = var.public_subnets
+  private_subnets    = var.private_subnets
+  availability_zones = var.availability_zones
 }
 
-#Crear el grupo de seguridad
-resource "aws_security_group" "mi_sg" {
-  name        = "mi_sg"
-  description = "Grupo de seguridad para mi instancia EC2"
-  vpc_id      = aws_vpc.mi_vpc.id
+# ============================================================
+#  MÓDULO EC2 - Usa los outputs de VPC para ubicar instancias
+# ============================================================
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "TCP"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-}
-}
+module "ec2" {
+  source = "./modulos/ec2"
 
-resource "aws_instance" "ejemplo" {
-  ami           = "ami-091138d0f0d41ff90"
-  instance_type = "t3.micro"
-  key_name      = "vockey"
-  subnet_id     = aws_subnet.mi_subnet.id
-  vpc_security_group_ids = [aws_security_group.mi_sg]
+  environment    = var.environment
+  project_name   = var.project_name
+  instance_type  = var.instance_type
+  ami_id         = var.ami_id
+  instance_count = var.instance_count
+  key_pair_name  = var.key_pair_name
 
-  tags = {
-    Name = "EC2Instance"
-  }
+  # Valores provenientes del módulo VPC (encadenamiento de módulos)
+  vpc_id    = module.vpc.vpc_id
+  subnet_id = module.vpc.public_subnet_ids[0]
+
+  depends_on = [module.vpc]
 }
 
+# ============================================================
+#  OUTPUTS DEL PROYECTO RAÍZ
+# ============================================================
+
+output "vpc_id" {
+  description = "ID de la VPC creada"
+  value       = module.vpc.vpc_id
+}
+
+output "instancias_publicas" {
+  description = "IPs públicas de las instancias EC2"
+  value       = module.ec2.public_ips
+}
